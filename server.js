@@ -24,7 +24,7 @@ var sio_server = io(server, {
     ]
 });
 
-app.use(express.static(path.join(__dirname + '/app/build/client')));
+app.use(express.static(path.join(__dirname + '/build/client')));
 
 app.get('*', (req, res) => {
   console.log("get index.html!")
