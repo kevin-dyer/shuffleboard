@@ -31,10 +31,6 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname + '/app/build/client/index.html'));
 });
 
-app.get("/test", (req, res) => {
-  res.send('OK brah')
-})
-
 
 //TODO: need to emit when user disconnects
 let userCount = 0
