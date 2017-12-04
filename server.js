@@ -12,16 +12,16 @@ const server = http.createServer(app);
 // const wss = new WebSocket.Server({ server });
 
 var sio_server = io(server, {
-    origins: allowedOrigins,
+    // origins: allowedOrigins,
     // path : '/',
-    transports: [
-      'websocket', 
-      'flashsocket', 
-      'htmlfile', 
-      'xhr-polling', 
-      'jsonp-polling', 
-      'polling'
-    ]
+    // transports: [
+    //   'websocket', 
+    //   'flashsocket', 
+    //   'htmlfile', 
+    //   'xhr-polling', 
+    //   'jsonp-polling', 
+    //   'polling'
+    // ]
 });
 
 app.use(express.static(path.join(__dirname + '/build/client')));
