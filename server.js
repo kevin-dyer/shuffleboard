@@ -5,14 +5,14 @@ var path = require('path');
 // const WebSocket = require('ws');
 
 var io = require('socket.io');
-var allowedOrigins = "http://localhost:* http://127.0.0.1:*";
+var allowedOrigins = "http://localhost:* http://127.0.0.1:* http://0.0.0.0:* http://192.168.0.101:*";
 
 const app = express();
 const server = http.createServer(app);
 // const wss = new WebSocket.Server({ server });
 
 var sio_server = io(server, {
-    // origins: allowedOrigins,
+    origins: allowedOrigins,
     // path : '/',
     // transports: [
     //   'websocket', 
@@ -51,7 +51,7 @@ sio_server.on('connection', function(socket){
 
   socket.on('disconnect', function (reason) {
     // socket.broadcast.emit('USER_LEFT', {userCount: --userCount});
-    userCount = 0
+    userCount -= 1
     socket.broadcast.emit('USER_LEFT', {userCount: userCount});
     console.log('a user DISconnected, userCount: ', userCount);
   })
