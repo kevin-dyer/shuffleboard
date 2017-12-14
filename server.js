@@ -11,18 +11,18 @@ const app = express();
 const server = http.createServer(app);
 // const wss = new WebSocket.Server({ server });
 
-// var sio_server = io(server, {
-//     origins: allowedOrigins,
-//     // path : '/',
-//     // transports: [
-//     //   'websocket', 
-//     //   'flashsocket', 
-//     //   'htmlfile', 
-//     //   'xhr-polling', 
-//     //   'jsonp-polling', 
-//     //   'polling'
-//     // ]
-// });
+var sio_server = io(server, {
+    // origins: allowedOrigins,
+    // path : '/',
+    // transports: [
+    //   'websocket', 
+    //   'flashsocket', 
+    //   'htmlfile', 
+    //   'xhr-polling', 
+    //   'jsonp-polling', 
+    //   'polling'
+    // ]
+});
 
 app.use(express.static(path.join(__dirname + '/build/client')));
 
@@ -33,29 +33,30 @@ app.get('*', (req, res) => {
 
 
 //TODO: need to emit when user disconnects
-// let userCount = 0
-// sio_server.on('connection', function(socket){
-//   socket.broadcast.emit('USER_JOINED', {userCount: ++userCount});
-//   socket.emit('USER_JOINED', {userCount: userCount});
-//   console.log('a user connected, userCount: ', userCount);
+let userCount = 0
+sio_server.on('connection', function(socket){
+  socket.broadcast.emit('USER_JOINED', {userCount: ++userCount});
+  socket.emit('USER_JOINED', {userCount: userCount});
+  console.log('a user connected, userCount: ', userCount);
 
-//   socket.on('BROADCAST_BOARD_CONFIG', function(msg) {
+  socket.on('BROADCAST_BOARD_CONFIG', function(msg) {
 
-//     // console.log("broadcast board config msg: ", msg)
-//     socket.broadcast.emit('BROADCAST_BOARD_CONFIG', msg);
-//   })
+    // console.log("broadcast board config msg: ", msg)
+    socket.broadcast.emit('BROADCAST_BOARD_CONFIG', msg);
+  })
 
-//   socket.on('BROADCAST_PUCKS', function(msg) {
-//     socket.broadcast.emit('BROADCAST_PUCKS', msg);
-//   })
+  socket.on('BROADCAST_PUCKS', function(msg) {
+    socket.broadcast.emit('BROADCAST_PUCKS', msg);
+  })
 
-//   socket.on('disconnect', function (reason) {
-//     // socket.broadcast.emit('USER_LEFT', {userCount: --userCount});
-//     userCount -= 1
-//     socket.broadcast.emit('USER_LEFT', {userCount: userCount});
-//     console.log('a user DISconnected, userCount: ', userCount);
-//   })
-// });
+  socket.on('disconnect', function (reason) {
+    // socket.broadcast.emit('USER_LEFT', {userCount: --userCount});
+    userCount -= 1
+    socket.broadcast.emit('USER_LEFT', {userCount: userCount});
+    console.log('a user DISconnected, userCount: ', userCount);
+  })
+});
+
 const PORT = process.env.PORT || 8080;
 server.listen(PORT, function listening() {
   console.log('Listening on %d', server.address().port);
