@@ -4,7 +4,7 @@ const url = require('url');
 var path = require('path');
 // const WebSocket = require('ws');
 
-// var io = require('socket.io');
+var io = require('socket.io');
 // var allowedOrigins = "http://localhost:* http://127.0.0.1:* http://0.0.0.0:* http://192.168.0.101:*";
 
 const app = express();
