@@ -28,7 +28,7 @@ app.use(express.static(path.join(__dirname + '/build/client')));
 
 app.get('*', (req, res) => {
   console.log("get index.html!")
-  res.sendFile(path.join(__dirname + '/app/build/client/index.html'));
+  res.sendFile(path.join(__dirname + '/build/client/index.html'));
 });
 
 
@@ -47,6 +47,22 @@ sio_server.on('connection', function(socket){
 
   socket.on('BROADCAST_PUCKS', function(msg) {
     socket.broadcast.emit('BROADCAST_PUCKS', msg);
+  })
+
+  socket.on('TURN_HAS_STARTED', function(msg) {
+    socket.broadcast.emit('TURN_HAS_STARTED', msg);
+  })
+
+  socket.on('MOUSE_DOWN', function(msg) {
+    socket.broadcast.emit('MOUSE_DOWN', msg);
+  })
+
+  socket.on('MOUSE_UP', function(msg) {
+    socket.broadcast.emit('MOUSE_UP', msg);
+  })
+
+  socket.on('ACCEPT_MODAL', function(msg) {
+    socket.broadcast.emit('ACCEPT_MODAL', msg);
   })
 
   socket.on('disconnect', function (reason) {
