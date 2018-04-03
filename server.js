@@ -82,8 +82,6 @@ let userCount = 0
 let roomPin = 1000
 sio_server.on('connection', function(socket){
   socket.broadcast.emit(USER_JOINED, {socketId: socket.id});
-  // socket.emit(USER_JOINED, {userCount: userCount});
-
   console.log('User connected, socketId: ', socket.id);
 
   //join room
@@ -99,7 +97,6 @@ sio_server.on('connection', function(socket){
     sio_server.in(roomId).clients((error, clients) => {
       if (error) throw error;
 
-      // socket.emit(JOINED_ROOM, {roomId, roomPin, clients})
       socket.emit(GAME_STARTED, {roomId, roomPin, clients})
     })
 
@@ -110,7 +107,6 @@ sio_server.on('connection', function(socket){
   })
 
   socket.on(JOIN_GAME, function (msg) {
-    // console.log("JOIN_GAME msg: ", msg)
     if (msg && msg.roomPin) {
       const roomId = `room${msg.roomPin}`
 
@@ -122,7 +118,6 @@ sio_server.on('connection', function(socket){
         socket.emit(JOINED_ROOM, {roomId, roomPin, clients})
       })
       //return roomId to specific client
-      // socket.to(id).emit(ROOM_CREATED, {roomId, roomPin})
       broadcastMsg(socket, USER_JOINED, {roomId, socketId: socket.id})
     }
   })
