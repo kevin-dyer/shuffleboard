@@ -2,14 +2,12 @@ const express = require('express');
 const http = require('http');
 const url = require('url');
 var path = require('path');
-// const WebSocket = require('ws');
 
 var io = require('socket.io');
 // var allowedOrigins = "http://localhost:* http://127.0.0.1:* http://0.0.0.0:* http://192.168.0.101:*";
 
 const app = express();
 const server = http.createServer(app);
-// const wss = new WebSocket.Server({ server });
 
 var sio_server = io(server, {
     // origins: allowedOrigins,
@@ -38,7 +36,7 @@ const MOUSE_UP = 'MOUSE_UP'
 const ACCEPT_MODAL = 'ACCEPT_MODAL'
 const JOINED_ROOM = 'JOINED_ROOM'
 const GAME_STARTED = 'GAME_STARTED'
-
+const DONE_WAITING = 'DONE_WAITING'
 
 app.use(express.static(path.join(__dirname + '/build/client')));
 
@@ -47,24 +45,6 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname + '/build/client/index.html'));
 });
 
-//this seems like over kill becuase I will be setting up a new socket for each room
-// and it does not seem like it can be towrn down 
-//TODO: create endpoint to create channels for
-// let roomPin = 1000
-// app.get('/start_game', (req, res) => {
-//   //TODO: create namespaced channel, for now, make the channel name space the pin
-//   // const pin = Math.floor(Math.random() * 1000 + 1000) % 10000 //this should always have 4 digits
-
-//   console.log("pin: ", pin)
-
-//   //create namespaced socket
-//   const room = io.of(`/room${pin}`);
-
-//   room.on('connection', function(socket){
-//     console.log('someone connected');
-    
-//   });
-// })
 
 function broadcastMsg(socket, type, msg={}) {
   const nextMsg = msg
@@ -81,12 +61,8 @@ function broadcastMsg(socket, type, msg={}) {
 let userCount = 0
 let roomPin = 1000
 sio_server.on('connection', function(socket){
-  socket.broadcast.emit(USER_JOINED, {socketId: socket.id});
   console.log('User connected, socketId: ', socket.id);
 
-  //join room
-  //TODO: figure out how to clean up old rooms
-  //Question, are these the correct arguments?
   socket.on(START_GAME, function(id, msg) {
     //create new roomId
     const roomId = `room${++roomPin}`
@@ -131,9 +107,12 @@ sio_server.on('connection', function(socket){
     }
   })
 
-  socket.on(BROADCAST_BOARD_CONFIG, msg =>
+  socket.on(BROADCAST_BOARD_CONFIG, msg =>{
+    //broadcast to all other clients
     broadcastMsg(socket, BROADCAST_BOARD_CONFIG, msg)
-  )
+    //also emit back to socket
+    socket.emit(BROADCAST_BOARD_CONFIG, msg)
+  })
 
   socket.on(BROADCAST_PUCKS, msg =>
     broadcastMsg(socket, BROADCAST_PUCKS, msg)
@@ -155,20 +134,27 @@ sio_server.on('connection', function(socket){
     broadcastMsg(socket, ACCEPT_MODAL, msg)
   )
 
-  socket.on('disconnect', function (reason) {
-    const rooms = Object  .keys(socket.rooms)
+  socket.on(DONE_WAITING, msg =>
+    broadcastMsg(socket, DONE_WAITING, msg)
+  )
 
+  socket.on('disconnecting', function (reason) {
+    console.log("socket disconnected, reason: ", reason)
+    const rooms = Object.keys(socket.rooms)
     //TODO: for each room, need to broadcast that user left
     //NOTE: should only be one room
     rooms.forEach(roomId => {
-      const clients = io.sockets.clients(roomId)
+      sio_server.in(roomId).clients((error, clients) => {
+        if (error) throw error;
 
-      if (clients && clients.length > 0) {
-        broadcastMsg(socket, USER_LEFT, {roomId, socketId: socket.id})
-      } else {
-        //No one left in this room
-        console.log("all clients have left the room: ", roomId)
-      }
+        if (clients && clients.length > 0) {
+          console.log("broadcasting user left to roomId: ", roomId)
+          broadcastMsg(socket, USER_LEFT, {roomId, socketId: socket.id})
+        } else {
+          //No one left in this room
+          console.log("all clients have left the room: ", roomId)
+        }
+      })
     })
   })
 });
