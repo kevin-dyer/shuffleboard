@@ -37,6 +37,8 @@ const ACCEPT_MODAL = 'ACCEPT_MODAL'
 const JOINED_ROOM = 'JOINED_ROOM'
 const GAME_STARTED = 'GAME_STARTED'
 const DONE_WAITING = 'DONE_WAITING'
+const PLAY_AGAIN = 'PLAY_AGAIN'
+const EXIT_GAME = 'EXIT_GAME'
 
 app.use(express.static(path.join(__dirname + '/build/client')));
 
@@ -130,13 +132,22 @@ sio_server.on('connection', function(socket){
     broadcastMsg(socket, MOUSE_UP, msg)
   )
 
-  socket.on(ACCEPT_MODAL, msg =>
+  socket.on(ACCEPT_MODAL, msg => {
+    console.log("received ACCEPT_MODAL")
     broadcastMsg(socket, ACCEPT_MODAL, msg)
-  )
+  })
 
   socket.on(DONE_WAITING, msg =>
     broadcastMsg(socket, DONE_WAITING, msg)
   )
+
+  socket.on(PLAY_AGAIN, msg =>
+    broadcastMsg(socket, PLAY_AGAIN, msg)
+  )
+
+  socket.on(EXIT_GAME, msg => {
+    broadcastMsg(socket, EXIT_GAME, msg)
+  })
 
   socket.on('disconnecting', function (reason) {
     console.log("socket disconnected, reason: ", reason)
