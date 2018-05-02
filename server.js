@@ -39,6 +39,8 @@ const GAME_STARTED = 'GAME_STARTED'
 const DONE_WAITING = 'DONE_WAITING'
 const PLAY_AGAIN = 'PLAY_AGAIN'
 const EXIT_GAME = 'EXIT_GAME'
+const STOP_TURN = 'STOP_TURN'
+const PUCK_BROADCAST_COMPLETE = 'PUCK_BROADCAST_COMPLETE'
 
 app.use(express.static(path.join(__dirname + '/build/client')));
 
@@ -71,7 +73,6 @@ sio_server.on('connection', function(socket){
     socket.join(roomId)
 
     console.log("start_game called, roomPin: ", roomPin, ", roomId: ", roomId)
-
     sio_server.in(roomId).clients((error, clients) => {
       if (error) throw error;
 
@@ -116,9 +117,13 @@ sio_server.on('connection', function(socket){
     socket.emit(BROADCAST_BOARD_CONFIG, msg)
   })
 
-  socket.on(BROADCAST_PUCKS, msg =>
+  socket.on(BROADCAST_PUCKS, msg =>{
     broadcastMsg(socket, BROADCAST_PUCKS, msg)
-  )
+
+    //Return a response to the sender after all messages have been broadcast to clients
+    //For testing only
+    socket.emit(PUCK_BROADCAST_COMPLETE, {response: 'OK'})
+  })
 
   socket.on(TURN_HAS_STARTED, msg =>
     broadcastMsg(socket, TURN_HAS_STARTED, msg)
@@ -147,6 +152,10 @@ sio_server.on('connection', function(socket){
 
   socket.on(EXIT_GAME, msg => {
     broadcastMsg(socket, EXIT_GAME, msg)
+  })
+
+  socket.on(STOP_TURN, msg => {
+    broadcastMsg(socket, STOP_TURN, msg)
   })
 
   socket.on('disconnecting', function (reason) {
